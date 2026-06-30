@@ -1,9 +1,8 @@
 {
   "greeting": "Hello",
   "name": "Jason",
-  "wishText": "Thirty years of memories, lessons, and growth. Excited to see what this new chapter brings!",
   "imagePath": "img/hero.jpg",
-  "text1": "It's your birthday!!! :D",
+  "text1": "It's your birthday!!! 🎂",
   "textInChatBox": "Happy birthday to you!! Many many happy blah...",
   "sendButtonLabel": "Send",
   "text2": "That's what I was going to do.",

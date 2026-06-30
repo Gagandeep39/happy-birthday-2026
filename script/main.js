@@ -463,3 +463,21 @@ const animationTimeline = () => {
 
 // Run fetch and animation in sequence
 fetchData();
+// Slideshow
+const slideshowImages = document.querySelectorAll("#background-slideshow .slideshow-image");
+let currentImageIndex = 0;
+
+function showNextImage() {
+  if (slideshowImages.length > 0) {
+    slideshowImages[currentImageIndex].classList.remove("active");
+    currentImageIndex = (currentImageIndex + 1) % slideshowImages.length;
+    slideshowImages[currentImageIndex].classList.add("active");
+  }
+}
+
+// Make the first image active initially
+if (slideshowImages.length > 0) {
+  slideshowImages[0].classList.add("active");
+}
+
+setInterval(showNextImage, 5000); // Change image every 8 seconds
