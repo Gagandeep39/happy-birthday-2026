@@ -119,14 +119,14 @@ body {
 .six img {
   display: inline-block;
   max-width: 100%;
-  height: auto;
+  max-height: 50vh;
 }
 
 .six .hat {
   position: absolute;
   width: 80px;
-  top: -35px;
-  left: 41.5%;
+  top: -95px;
+  left: 43%;
   /* transform: scale(0.1); */
 }
 
@@ -296,7 +296,7 @@ body {
 }
 
 /* Media Queries */
-@media screen and (max-height: 1000px) {
+/* @media screen and (max-height: 1000px) {
   .six .hat {
     left: 40%;
   }
@@ -318,7 +318,7 @@ body {
   .six .hat {
     left: 32%;
   }
-}
+} */
 
 @media screen and (max-width: 500px) {
   .container {
