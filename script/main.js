@@ -24,6 +24,172 @@ const fetchData = () => {
     });
 };
 
+  let resetScratchCard = () => {};
+
+const initScratchCard = () => {
+  const card = document.querySelector("[data-scratch-card]");
+  const canvas = document.querySelector("[data-scratch-canvas]");
+
+  if (!card || !canvas) {
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+
+  if (!ctx) {
+    return;
+  }
+
+  const dpr = window.devicePixelRatio || 1;
+  let isScratching = false;
+  let lastPoint = null;
+  let revealed = false;
+
+  const drawCover = (width, height) => {
+    ctx.save();
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#d9b16a";
+    ctx.fillRect(0, 0, width, height);
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.18)";
+    for (let offset = -height; offset < width + height; offset += 26) {
+      ctx.fillRect(offset, 0, 10, height);
+    }
+
+    ctx.fillStyle = "rgba(255, 255, 255, 0.14)";
+    ctx.beginPath();
+    ctx.arc(width * 0.18, height * 0.22, Math.min(width, height) * 0.12, 0, Math.PI * 2);
+    ctx.arc(width * 0.82, height * 0.28, Math.min(width, height) * 0.08, 0, Math.PI * 2);
+    ctx.arc(width * 0.74, height * 0.76, Math.min(width, height) * 0.1, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.fillStyle = "rgba(255, 248, 238, 0.92)";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "600 18px 'Work Sans', sans-serif";
+    ctx.fillText("Scratch for a gift", width / 2, height / 2 - 8);
+    ctx.font = "400 13px 'Work Sans', sans-serif";
+    ctx.fillText("Drag your mouse or finger", width / 2, height / 2 + 14);
+    ctx.restore();
+  };
+
+  const resizeCanvas = () => {
+    const width = card.clientWidth;
+    const height = card.clientHeight;
+
+    canvas.width = Math.max(1, Math.round(width * dpr));
+    canvas.height = Math.max(1, Math.round(height * dpr));
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    if (!revealed) {
+      drawCover(width, height);
+    }
+  };
+
+  const getPoint = (event) => {
+    const bounds = canvas.getBoundingClientRect();
+
+    return {
+      x: event.clientX - bounds.left,
+      y: event.clientY - bounds.top
+    };
+  };
+
+  const scratchAt = (point, previousPoint) => {
+    ctx.save();
+    ctx.globalCompositeOperation = "destination-out";
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+    ctx.lineWidth = 34;
+    ctx.beginPath();
+    ctx.moveTo(previousPoint ? previousPoint.x : point.x, previousPoint ? previousPoint.y : point.y);
+    ctx.lineTo(point.x, point.y);
+    ctx.stroke();
+    ctx.arc(point.x, point.y, 17, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.restore();
+  };
+
+  const revealCard = () => {
+    if (revealed) {
+      return;
+    }
+
+    revealed = true;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    card.classList.add("is-revealed");
+  };
+
+  const getScratchProgress = () => {
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    const step = Math.max(Math.round(12 * dpr), 12);
+    let cleared = 0;
+    let samples = 0;
+
+    for (let y = 0; y < canvas.height; y += step) {
+      for (let x = 0; x < canvas.width; x += step) {
+        const alpha = imageData[(y * canvas.width + x) * 4 + 3];
+        samples += 1;
+
+        if (alpha < 32) {
+          cleared += 1;
+        }
+      }
+    }
+
+    return cleared / samples;
+  };
+
+  const endScratch = () => {
+    if (!isScratching) {
+      return;
+    }
+
+    isScratching = false;
+    lastPoint = null;
+
+    if (getScratchProgress() > 0.55) {
+      revealCard();
+    }
+  };
+
+  canvas.addEventListener("pointerdown", (event) => {
+    if (revealed) {
+      return;
+    }
+
+    isScratching = true;
+    lastPoint = getPoint(event);
+    canvas.setPointerCapture(event.pointerId);
+    scratchAt(lastPoint);
+  });
+
+  canvas.addEventListener("pointermove", (event) => {
+    if (!isScratching || revealed) {
+      return;
+    }
+
+    const currentPoint = getPoint(event);
+    scratchAt(currentPoint, lastPoint);
+    lastPoint = currentPoint;
+  });
+
+  canvas.addEventListener("pointerup", endScratch);
+  canvas.addEventListener("pointercancel", endScratch);
+  canvas.addEventListener("pointerleave", endScratch);
+
+  window.addEventListener("resize", resizeCanvas);
+  resizeCanvas();
+
+  resetScratchCard = () => {
+    revealed = false;
+    isScratching = false;
+    lastPoint = null;
+    card.classList.remove("is-revealed");
+    resizeCanvas();
+  };
+};
+
 // Animation Timeline
 const animationTimeline = () => {
   // Spit chars that needs to be animated individually
@@ -270,6 +436,16 @@ const animationTimeline = () => {
       zIndex: "-1"
     })
     .staggerFrom(".nine p", 1, ideaTextTrans, 1.2)
+    .from(
+      ".scratch-card",
+      0.6,
+      {
+        opacity: 0,
+        y: 16,
+        scale: 0.96
+      },
+      "+=0.6"
+    )
     .to(
       ".last-smile",
       0.5,
@@ -285,8 +461,11 @@ const animationTimeline = () => {
   // Restart Animation on click
   const replyBtn = document.getElementById("replay");
   replyBtn.addEventListener("click", () => {
+    resetScratchCard();
     tl.restart();
   });
+
+  initScratchCard();
 };
 
 // Run fetch and animation in sequence
