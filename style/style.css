@@ -250,7 +250,7 @@ body {
   padding: 1.25rem;
   text-align: center;
   color: #2f2a3b;
-  background: radial-gradient(circle at top, rgba(255, 214, 153, 0.45), transparent 55%);
+  background: linear-gradient(rgb(27 27 27 / 65%), rgba(255, 255, 255, 0.65)), url(../img/scratchcardcontent.png) center / cover no-repeat;
 }
 
 .scratch-card__label {
@@ -264,12 +264,14 @@ body {
   margin: 0;
   font-size: 1.7rem;
   line-height: 1.05;
+  font-weight: 600;
 }
 
 .scratch-card__copy {
   max-width: 14rem;
   font-size: 1rem;
   line-height: 1.4;
+  font-weight: 600;
 }
 
 .scratch-card__cover {
